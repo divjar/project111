@@ -167,7 +167,7 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
               },
             }}
           >
-            BSID-UMM NOC Monitoring
+            BSID-UMM | NOC Monitoring Dashboard
           </Typography>
         </Box>
 
