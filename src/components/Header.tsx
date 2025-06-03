@@ -83,7 +83,16 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
     }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Server size={28} color="#3f88f2" />
+          <Box className="logo-container" sx={{ position: 'relative' }}>
+            <Box className="logo-glow" />
+            <Server 
+              size={28} 
+              color="#3f88f2"
+              style={{
+                filter: 'drop-shadow(0 0 10px rgba(63, 136, 242, 0.5))',
+              }}
+            />
+          </Box>
           <Typography
             variant={isMobile ? "h6" : "h5"}
             component="h1"
@@ -96,6 +105,17 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              textShadow: '0 2px 10px rgba(63, 136, 242, 0.3)',
+              animation: 'textShine 3s linear infinite',
+              '@keyframes textShine': {
+                '0%': {
+                  backgroundPosition: '0% 50%',
+                },
+                '100%': {
+                  backgroundPosition: '100% 50%',
+                },
+              },
+              backgroundSize: '200% auto',
             }}
           >
             NOC Monitoring Dashboard
