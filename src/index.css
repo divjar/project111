@@ -273,7 +273,7 @@ body {
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   }
   50% {
-    box-shadow: 0 0 20px rgba(63, 136, 242, 0.8);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
   }
   100% {
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
