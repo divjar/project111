@@ -23,25 +23,28 @@ const AccessDoorSection = () => {
         setError(null);
         const baseUrl = import.meta.env.VITE_SOCKET_SERVER || 'http://10.10.1.25:3000';
         const token = localStorage.getItem('authToken');
-        
+
         if (!token) {
-          throw new Error('No authentication token found');
+          throw new Error('No authentication token found. Please log in again.');
         }
 
         const response = await fetch(`${baseUrl}/api/access-logs`, {
           headers: {
             'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
           }
         });
-        
+
         if (!response.ok) {
           if (response.status === 401) {
+            localStorage.removeItem('authToken');
+            window.location.reload();
             throw new Error('Session expired. Please log in again.');
           }
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`Failed to fetch access logs (${response.status})`);
         }
-        
+
         const data = await response.json();
         if (Array.isArray(data)) {
           setAccessLogs(data);
@@ -58,7 +61,7 @@ const AccessDoorSection = () => {
 
     if (connected) {
       fetchAccessLogs();
-      
+
       socket?.on('access_logs', (newLogs) => {
         if (Array.isArray(newLogs)) {
           setAccessLogs(newLogs);
@@ -91,6 +94,7 @@ const AccessDoorSection = () => {
           backgroundImage: 'linear-gradient(to bottom right, rgba(30, 30, 60, 0.4), rgba(30, 30, 60, 0.1))',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 82, 82, 0.3)',
+          height: '100%'
         }}
       >
         <CardContent>

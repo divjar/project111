@@ -94,20 +94,7 @@ body {
 /* Header Logo Animation */
 .logo-container {
   animation: float 6s ease-in-out infinite;
-}
-
-.logo-glow {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(63, 136, 242, 0.2), transparent 70%);
-  filter: blur(10px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.logo-container:hover .logo-glow {
-  opacity: 1;
+  position: relative;
 }
 
 @keyframes float {
@@ -116,6 +103,23 @@ body {
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
   }
 }
 

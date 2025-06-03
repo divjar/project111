@@ -83,13 +83,37 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
     }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box className="logo-container" sx={{ position: 'relative' }}>
-            <Box className="logo-glow" />
+          <Box 
+            className="logo-container" 
+            sx={{ 
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: -10,
+                background: 'radial-gradient(circle, rgba(63, 136, 242, 0.3) 0%, transparent 70%)',
+                animation: 'pulse 2s ease-in-out infinite',
+                opacity: 0.5,
+              }
+            }}
+          >
+            <Box 
+              className="logo-glow"
+              sx={{
+                position: 'absolute',
+                inset: -15,
+                background: 'radial-gradient(circle, rgba(63, 136, 242, 0.4) 0%, transparent 70%)',
+                filter: 'blur(10px)',
+                opacity: 0,
+                transition: 'opacity 0.3s ease',
+              }}
+            />
             <Server 
-              size={28} 
+              size={32} 
               color="#3f88f2"
               style={{
-                filter: 'drop-shadow(0 0 10px rgba(63, 136, 242, 0.5))',
+                filter: 'drop-shadow(0 0 15px rgba(63, 136, 242, 0.6))',
+                animation: 'float 3s ease-in-out infinite',
               }}
             />
           </Box>
@@ -101,21 +125,18 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              background: 'linear-gradient(45deg, #3f88f2, #00b0ff)',
+              background: 'linear-gradient(90deg, #3f88f2 0%, #00b0ff 50%, #3f88f2 100%)',
+              backgroundSize: '200% auto',
+              animation: 'shine 6s linear infinite',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               textShadow: '0 2px 10px rgba(63, 136, 242, 0.3)',
-              animation: 'textShine 3s linear infinite',
-              '@keyframes textShine': {
-                '0%': {
-                  backgroundPosition: '0% 50%',
-                },
-                '100%': {
-                  backgroundPosition: '100% 50%',
+              '@keyframes shine': {
+                to: {
+                  backgroundPosition: '200% center',
                 },
               },
-              backgroundSize: '200% auto',
             }}
           >
             NOC Monitoring Dashboard
