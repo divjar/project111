@@ -91,9 +91,17 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
                 content: '""',
                 position: 'absolute',
                 inset: -10,
-                background: 'radial-gradient(circle, rgba(63, 136, 242, 0.3) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(255, 223, 0, 0.3) 0%, transparent 70%)',
                 animation: 'pulse 2s ease-in-out infinite',
                 opacity: 0.5,
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                inset: -15,
+                background: 'radial-gradient(circle, rgba(63, 136, 242, 0.3) 0%, transparent 70%)',
+                animation: 'pulse 3s ease-in-out infinite',
+                opacity: 0.3,
               }
             }}
           >
@@ -101,19 +109,22 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
               className="logo-glow"
               sx={{
                 position: 'absolute',
-                inset: -15,
-                background: 'radial-gradient(circle, rgba(63, 136, 242, 0.4) 0%, transparent 70%)',
+                inset: -20,
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
                 filter: 'blur(10px)',
-                opacity: 0,
-                transition: 'opacity 0.3s ease',
+                animation: 'glowPulse 4s ease-in-out infinite',
+                '@keyframes glowPulse': {
+                  '0%, 100%': { opacity: 0.2, transform: 'scale(1)' },
+                  '50%': { opacity: 0.5, transform: 'scale(1.2)' },
+                },
               }}
             />
             <Server 
               size={32} 
-              color="#3f88f2"
+              color="#ffd700"
               style={{
-                filter: 'drop-shadow(0 0 15px rgba(63, 136, 242, 0.6))',
-                animation: 'float 3s ease-in-out infinite',
+                filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 20px rgba(63, 136, 242, 0.4))',
+                animation: 'serverFloat 6s ease-in-out infinite',
               }}
             />
           </Box>
@@ -125,16 +136,33 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              background: 'linear-gradient(90deg, #3f88f2 0%, #00b0ff 50%, #3f88f2 100%)',
+              background: 'linear-gradient(45deg, #ffd700 0%, #3f88f2 50%, #ffffff 100%)',
               backgroundSize: '200% auto',
-              animation: 'shine 6s linear infinite',
+              animation: 'gradientFlow 8s linear infinite',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              textShadow: '0 2px 10px rgba(63, 136, 242, 0.3)',
-              '@keyframes shine': {
-                to: {
-                  backgroundPosition: '200% center',
+              textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)',
+              '@keyframes gradientFlow': {
+                '0%': { backgroundPosition: '0% center' },
+                '100%': { backgroundPosition: '200% center' },
+              },
+              '@keyframes serverFloat': {
+                '0%, 100%': { 
+                  transform: 'translateY(0) rotate(0deg)',
+                  filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.6))',
+                },
+                '25%': {
+                  transform: 'translateY(-8px) rotate(-3deg)',
+                  filter: 'drop-shadow(0 0 15px rgba(63, 136, 242, 0.6))',
+                },
+                '75%': {
+                  transform: 'translateY(8px) rotate(3deg)',
+                  filter: 'drop-shadow(0 0 15px rgba(255, 255, 255, 0.6))',
+                },
+                '50%': {
+                  transform: 'translateY(-4px) rotate(0deg)',
+                  filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))',
                 },
               },
             }}

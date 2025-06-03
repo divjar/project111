@@ -59,8 +59,8 @@ body {
   background: linear-gradient(
     45deg,
     transparent,
-    rgba(63, 136, 242, 0),
-    rgba(63, 136, 242, 0)
+    rgba(255, 215, 0, 0.1),
+    rgba(63, 136, 242, 0.1)
   );
   -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
   mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
@@ -73,15 +73,15 @@ body {
 .card:hover {
   transform: translateY(-8px) scale(1.005);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(63, 136, 242, 0.2);
+  border-color: rgba(255, 215, 0, 0.2);
 }
 
 .card:hover::before {
   background: linear-gradient(
     45deg,
     transparent,
-    rgba(63, 136, 242, 0.3),
-    rgba(63, 136, 242, 0.1)
+    rgba(255, 215, 0, 0.2),
+    rgba(63, 136, 242, 0.2)
   );
   opacity: 1;
 }
@@ -99,10 +99,16 @@ body {
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(8px) rotate(5deg);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-5px) rotate(0deg);
   }
 }
 
@@ -150,13 +156,13 @@ body {
 
 @keyframes alert-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+    box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
   }
 }
 
@@ -250,7 +256,7 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(45deg, #3f88f2, #00b0ff);
+  background: linear-gradient(45deg, #ffd700, #3f88f2, #ffffff);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -258,19 +264,19 @@ body {
 
 /* Avatar glow effect */
 .avatar-glow {
-  box-shadow: 0 0 10px rgba(63, 136, 242, 0.5);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   animation: avatar-pulse 2s infinite;
 }
 
 @keyframes avatar-pulse {
   0% {
-    box-shadow: 0 0 10px rgba(63, 136, 242, 0.5);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   }
   50% {
     box-shadow: 0 0 20px rgba(63, 136, 242, 0.8);
   }
   100% {
-    box-shadow: 0 0 10px rgba(63, 136, 242, 0.5);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   }
 }
 
