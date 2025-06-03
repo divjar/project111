@@ -22,14 +22,23 @@ const AccessDoorSection = () => {
       try {
         setError(null);
         const baseUrl = import.meta.env.VITE_SOCKET_SERVER || 'http://10.10.1.25:3000';
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
         const response = await fetch(`${baseUrl}/api/access-logs`, {
           headers: {
-            'Accept': 'application/json'
-          },
-          credentials: 'include'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
         
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Session expired. Please log in again.');
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -42,7 +51,7 @@ const AccessDoorSection = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error fetching access logs:', error);
-        setError('Failed to fetch access logs');
+        setError(error instanceof Error ? error.message : 'Failed to fetch access logs');
         setLoading(false);
       }
     };
@@ -50,7 +59,6 @@ const AccessDoorSection = () => {
     if (connected) {
       fetchAccessLogs();
       
-      // Listen for real-time updates
       socket?.on('access_logs', (newLogs) => {
         if (Array.isArray(newLogs)) {
           setAccessLogs(newLogs);
@@ -58,7 +66,6 @@ const AccessDoorSection = () => {
         }
       });
 
-      // Fetch every 30 seconds as backup
       const interval = setInterval(fetchAccessLogs, 30000);
 
       return () => {
@@ -98,6 +105,7 @@ const AccessDoorSection = () => {
   return (
     <Card 
       sx={{ 
+        height: '100%',
         backgroundImage: 'linear-gradient(to bottom right, rgba(30, 30, 60, 0.4), rgba(30, 30, 60, 0.1))',
         backdropFilter: 'blur(10px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
