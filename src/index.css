@@ -41,13 +41,16 @@ body {
 
 /* Enhanced Card Floating Effect */
 .card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   background: rgba(26, 26, 46, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
+  will-change: transform, box-shadow;
+  contain: content;
 }
 
 .card::before {
@@ -66,8 +69,9 @@ body {
   mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
+  will-change: opacity;
 }
 
 .card:hover {
@@ -97,6 +101,7 @@ body {
 .logo-container {
   animation: float 6s ease-in-out infinite;
   position: relative;
+  will-change: transform;
 }
 
 /* Enhanced Header Title Animation */
@@ -105,6 +110,7 @@ body {
   background-size: 300% 100%;
   animation: powerFlow 3s linear infinite;
   position: relative;
+  will-change: background-position;
 }
 
 @keyframes powerFlow {
@@ -125,14 +131,15 @@ body {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   animation: powerShine 3s linear infinite;
+  will-change: transform;
 }
 
 @keyframes powerShine {
   0% {
-    left: -100%;
+    transform: translateX(-100%);
   }
   100% {
-    left: 100%;
+    transform: translateX(300%);
   }
 }
 
@@ -142,6 +149,7 @@ body {
   background: linear-gradient(135deg, rgba(63, 136, 242, 0.2), rgba(0, 176, 255, 0.2));
   border: 2px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 10px rgba(63, 136, 242, 0.2);
+  will-change: transform, box-shadow;
 }
 
 .avatar-button:hover {
@@ -160,6 +168,7 @@ body {
   animation: avatarGlow 2s linear infinite;
   opacity: 0;
   transition: opacity 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .avatar-button:hover::before {
@@ -210,26 +219,17 @@ body {
 /* Status indicator animations */
 .status-indicator {
   transition: all 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .value-change {
   animation: pulse 1s ease;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
+  will-change: transform;
 }
 
 .alert-pulse {
   animation: alert-pulse 2s infinite;
+  will-change: box-shadow;
 }
 
 @keyframes alert-pulse {
@@ -248,6 +248,7 @@ body {
 .critical-alert {
   animation: critical-pulse 2s infinite;
   box-shadow: 0 0 15px rgba(255, 82, 82, 0.5);
+  will-change: box-shadow;
 }
 
 @keyframes critical-pulse {
@@ -276,6 +277,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  will-change: transform, background-color;
 }
 
 .value-display:hover {
@@ -287,6 +289,7 @@ body {
 /* Access log animations */
 .access-log-item {
   animation: slideIn 0.3s ease-out;
+  will-change: transform, opacity;
 }
 
 @keyframes slideIn {
@@ -311,6 +314,7 @@ body {
 /* Trend indicators */
 .trend-indicator {
   transition: all 0.3s ease;
+  will-change: transform, color;
 }
 
 .trend-indicator.up {
@@ -326,41 +330,17 @@ body {
 /* Button hover effects */
 .hover-scale {
   transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 .hover-scale:hover {
   transform: scale(1.05);
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(45deg, #ffd700, #3f88f2, #ffffff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Avatar glow effect */
-.avatar-glow {
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-  animation: avatar-pulse 2s infinite;
-}
-
-@keyframes avatar-pulse {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-  }
-}
-
 /* Loading spinner */
 .loading-spinner {
   animation: spin 1s linear infinite;
+  will-change: transform;
 }
 
 @keyframes spin {
