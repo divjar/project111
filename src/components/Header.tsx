@@ -131,40 +131,15 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
           <Typography
             variant={isMobile ? "h6" : "h5"}
             component="h1"
+            className="header-title"
             sx={{ 
               ml: 2, 
               fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              background: 'linear-gradient(45deg, #ffd700 0%, #3f88f2 50%, #ffffff 100%)',
-              backgroundSize: '200% auto',
-              animation: 'gradientFlow 8s linear infinite',
-              backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)',
-              '@keyframes gradientFlow': {
-                '0%': { backgroundPosition: '0% center' },
-                '100%': { backgroundPosition: '200% center' },
-              },
-              '@keyframes serverFloat': {
-                '0%, 100%': { 
-                  transform: 'translateY(0) rotate(0deg)',
-                  filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.6))',
-                },
-                '25%': {
-                  transform: 'translateY(-8px) rotate(-3deg)',
-                  filter: 'drop-shadow(0 0 15px rgba(63, 136, 242, 0.6))',
-                },
-                '75%': {
-                  transform: 'translateY(8px) rotate(3deg)',
-                  filter: 'drop-shadow(0 0 15px rgba(255, 255, 255, 0.6))',
-                },
-                '50%': {
-                  transform: 'translateY(-4px) rotate(0deg)',
-                  filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))',
-                },
-              },
+              textShadow: '0 2px 10px rgba(0, 176, 255, 0.3)',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
             BSID-UMM | NOC Monitoring Dashboard
@@ -217,13 +192,23 @@ const Header = ({ connected, isMobile, alertCount, clearAlerts }: HeaderProps) =
 
           {/* User menu */}
           <Tooltip title="Account settings" TransitionComponent={Fade} arrow>
-            <IconButton onClick={handleUserMenuOpen} sx={{ ml: 1 }}>
+            <IconButton 
+              onClick={handleUserMenuOpen} 
+              className="avatar-button"
+              sx={{ 
+                ml: 1,
+                position: 'relative',
+                borderRadius: '50%',
+                width: 40,
+                height: 40,
+              }}
+            >
               <Avatar 
                 sx={{ 
                   width: 35, 
                   height: 35,
-                  bgcolor: 'primary.main',
-                  border: '2px solid rgba(255, 255, 255, 0.2)'
+                  bgcolor: 'transparent',
+                  background: 'linear-gradient(135deg, rgba(63, 136, 242, 0.8), rgba(0, 176, 255, 0.8))',
                 }}
               >
                 <User size={20} />
