@@ -41,9 +41,20 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const { socket } = useSocket();
 
+  // Request historical data on mount and when time range changes
   useEffect(() => {
     if (socket) {
-      socket.emit('request_historical_data', { timeRange });
+      const requestData = () => {
+        socket.emit('request_historical_data', { timeRange });
+      };
+
+      // Initial request
+      requestData();
+
+      // Set up interval for real-time updates
+      const interval = setInterval(requestData, 10000); // Update every 10 seconds
+
+      return () => clearInterval(interval);
     }
   }, [socket, timeRange]);
 
@@ -96,7 +107,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}`, {
+      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}&limit=100`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -275,7 +286,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       
       <CardContent>
         {loading ? (
-          <Skeleton variant="rectangular\" height={300} width="100%" />
+          <Skeleton variant="rectangular" height={300} width="100%" />
         ) : (
           <Box sx={{ mt: 1 }}>
             {activeTab === 0 && (
