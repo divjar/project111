@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -19,13 +19,26 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  Tooltip,
+  Zoom,
+  Chip,
 } from '@mui/material';
-import { BarChart3, Calendar, FileSpreadsheet, Download, Table } from 'lucide-react';
+import { 
+  BarChart3, 
+  Calendar, 
+  FileSpreadsheet, 
+  Download, 
+  Table, 
+  ZoomIn,
+  ZoomOut,
+  RefreshCw,
+  Info,
+} from 'lucide-react';
 import { DataType } from '../../types';
 import TemperatureChart from '../charts/TemperatureChart';
 import HumidityChart from '../charts/HumidityChart';
 import ElectricalChart from '../charts/ElectricalChart';
-import { format } from 'date-fns';
+import { format, subHours, subDays } from 'date-fns';
 import { useSocket } from '../../contexts/SocketContext';
 
 interface HistoricalDataSectionProps {
@@ -39,24 +52,44 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
   const [activeTab, setActiveTab] = useState(0);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [autoRefresh, setAutoRefresh] = useState(true);
   const { socket } = useSocket();
+
+  // Calculate time range labels
+  const timeRangeLabels = useMemo(() => ({
+    '24h': {
+      label: 'Last 24 Hours',
+      start: format(subHours(new Date(), 24), 'dd MMM HH:mm'),
+      end: format(new Date(), 'dd MMM HH:mm'),
+      interval: '10 minutes'
+    },
+    '7d': {
+      label: 'Last 7 Days',
+      start: format(subDays(new Date(), 7), 'dd MMM'),
+      end: format(new Date(), 'dd MMM'),
+      interval: '1 hour'
+    },
+    '30d': {
+      label: 'Last 30 Days',
+      start: format(subDays(new Date(), 30), 'dd MMM'),
+      end: format(new Date(), 'dd MMM'),
+      interval: '6 hours'
+    }
+  }), []);
 
   // Request historical data on mount and when time range changes
   useEffect(() => {
-    if (socket) {
+    if (socket && autoRefresh) {
       const requestData = () => {
         socket.emit('request_historical_data', { timeRange });
       };
 
-      // Initial request
       requestData();
-
-      // Set up interval for real-time updates
-      const interval = setInterval(requestData, 10000); // Update every 10 seconds
-
+      const interval = setInterval(requestData, 10000);
       return () => clearInterval(interval);
     }
-  }, [socket, timeRange]);
+  }, [socket, timeRange, autoRefresh]);
 
   const handleTimeRangeChange = (
     _: React.MouseEvent<HTMLElement>,
@@ -70,6 +103,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+    setZoomLevel(1); // Reset zoom level on tab change
   };
 
   const handleExportClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -78,6 +112,18 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
 
   const handleExportClose = () => {
     setExportAnchorEl(null);
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.2, 2));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
+  };
+
+  const toggleAutoRefresh = () => {
+    setAutoRefresh(prev => !prev);
   };
 
   const exportData = async () => {
@@ -159,6 +205,51 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
     }
   };
 
+  const renderChart = () => {
+    if (loading) {
+      return <Skeleton variant="rectangular" height={300} width="100%" />;
+    }
+
+    const chartProps = {
+      style: {
+        transform: `scale(${zoomLevel})`,
+        transformOrigin: 'center center',
+        transition: 'transform 0.3s ease',
+      }
+    };
+
+    switch (activeTab) {
+      case 0:
+        return (
+          <TemperatureChart 
+            nocData={data.historical.temperature?.noc || []} 
+            upsData={data.historical.temperature?.ups || []} 
+            timeRange={timeRange}
+            {...chartProps}
+          />
+        );
+      case 1:
+        return (
+          <HumidityChart 
+            nocData={data.historical.humidity?.noc || []} 
+            upsData={data.historical.humidity?.ups || []} 
+            timeRange={timeRange}
+            {...chartProps}
+          />
+        );
+      case 2:
+        return (
+          <ElectricalChart 
+            data={data.historical.electrical || []} 
+            timeRange={timeRange}
+            {...chartProps}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Card 
       sx={{ 
@@ -178,7 +269,65 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
           </Box>
         } 
         action={
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Auto Refresh" arrow>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={toggleAutoRefresh}
+                color={autoRefresh ? "primary" : "inherit"}
+                sx={{
+                  minWidth: 40,
+                  width: 40,
+                  height: 40,
+                  p: 0,
+                }}
+              >
+                <RefreshCw 
+                  size={20} 
+                  className={autoRefresh ? 'animate-spin' : ''} 
+                  style={{ 
+                    animationDuration: '3s',
+                    opacity: autoRefresh ? 1 : 0.5 
+                  }} 
+                />
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Zoom In" arrow>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= 2}
+                sx={{
+                  minWidth: 40,
+                  width: 40,
+                  height: 40,
+                  p: 0,
+                }}
+              >
+                <ZoomIn size={20} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Zoom Out" arrow>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= 0.5}
+                sx={{
+                  minWidth: 40,
+                  width: 40,
+                  height: 40,
+                  p: 0,
+                }}
+              >
+                <ZoomOut size={20} />
+              </Button>
+            </Tooltip>
+
             <Button
               variant="outlined"
               onClick={handleExportClick}
@@ -195,6 +344,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
             >
               Export Data
             </Button>
+
             <Menu
               anchorEl={exportAnchorEl}
               open={Boolean(exportAnchorEl)}
@@ -209,9 +359,6 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                 }
               }}
-              MenuListProps={{
-                'aria-hidden': false
-              }}
             >
               <MenuItem onClick={exportData}>
                 <ListItemIcon>
@@ -220,6 +367,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
                 <ListItemText>Export as CSV</ListItemText>
               </MenuItem>
             </Menu>
+
             <ToggleButtonGroup
               size="small"
               value={timeRange}
@@ -285,34 +433,24 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       </Box>
       
       <CardContent>
-        {loading ? (
-          <Skeleton variant="rectangular\" height={300} width="100%" />
-        ) : (
-          <Box sx={{ mt: 1 }}>
-            {activeTab === 0 && (
-              <TemperatureChart 
-                nocData={data.historical.temperature?.noc || []} 
-                upsData={data.historical.temperature?.ups || []} 
-                timeRange={timeRange}
-              />
-            )}
-            
-            {activeTab === 1 && (
-              <HumidityChart 
-                nocData={data.historical.humidity?.noc || []} 
-                upsData={data.historical.humidity?.ups || []} 
-                timeRange={timeRange}
-              />
-            )}
-            
-            {activeTab === 2 && (
-              <ElectricalChart 
-                data={data.historical.electrical || []} 
-                timeRange={timeRange}
-              />
-            )}
-          </Box>
-        )}
+        <Box 
+          sx={{ 
+            mt: 1,
+            position: 'relative',
+            overflow: 'hidden',
+            height: 300,
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'none',
+              background: loading ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
+              transition: 'background 0.3s ease',
+            }
+          }}
+        >
+          {renderChart()}
+        </Box>
         
         <Box 
           sx={{ 
@@ -321,38 +459,72 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
             borderRadius: 2,
             bgcolor: 'rgba(63, 136, 242, 0.1)', 
             border: '1px solid rgba(63, 136, 242, 0.2)',
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            justifyContent: 'space-between',
-            gap: 2
           }}
         >
-          <Box>
-            <Typography variant="subtitle2" color="primary.light" sx={{ mb: 0.5 }}>
-              Current View
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {getTabLabel(activeTab)} • {timeRange === '24h' ? 'Last 24 Hours' : timeRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="subtitle2" color="primary.light" sx={{ mb: 0.5 }}>
-              Data Points
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {timeRange === '24h' ? '144 samples (10 min intervals)' : 
-               timeRange === '7d' ? '168 samples (1 hour intervals)' : 
-               '120 samples (6 hour intervals)'}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="subtitle2" color="primary.light" sx={{ mb: 0.5 }}>
-              Last Updated
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {format(new Date(), 'dd MMM yyyy HH:mm:ss')}
-            </Typography>
-          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Typography variant="subtitle2" color="primary.light" sx={{ 
+                  mb: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}>
+                  <Info size={16} />
+                  Time Range
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {timeRangeLabels[timeRange as keyof typeof timeRangeLabels].label}
+                  <br />
+                  <span style={{ opacity: 0.7 }}>
+                    {timeRangeLabels[timeRange as keyof typeof timeRangeLabels].start} - {timeRangeLabels[timeRange as keyof typeof timeRangeLabels].end}
+                  </span>
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Typography variant="subtitle2" color="primary.light" sx={{ mb: 0.5 }}>
+                  Data Resolution
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Sampling interval: {timeRangeLabels[timeRange as keyof typeof timeRangeLabels].interval}
+                  <br />
+                  <span style={{ opacity: 0.7 }}>
+                    {timeRange === '24h' ? '144 samples' : 
+                     timeRange === '7d' ? '168 samples' : 
+                     '120 samples'}
+                  </span>
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Typography variant="subtitle2" color="primary.light" sx={{ mb: 0.5 }}>
+                  Status
+                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip 
+                    size="small"
+                    label={autoRefresh ? "Auto-refresh ON" : "Auto-refresh OFF"}
+                    color={autoRefresh ? "success" : "default"}
+                    variant="outlined"
+                  />
+                  <Chip 
+                    size="small"
+                    label={`Zoom: ${(zoomLevel * 100).toFixed(0)}%`}
+                    color="primary"
+                    variant="outlined"
+                  />
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  Last updated: {format(new Date(), 'dd MMM yyyy HH:mm:ss')}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
         </Box>
       </CardContent>
     </Card>
