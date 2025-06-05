@@ -12,15 +12,13 @@ import {
   ToggleButton,
   Tab,
   Tabs,
-  IconButton,
-  Tooltip,
+  Button,
+  CircularProgress,
   Stack,
   Menu,
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Button,
-  CircularProgress
 } from '@mui/material';
 import { BarChart3, Calendar, FileSpreadsheet, Download, Table, LineChart } from 'lucide-react';
 import { DataType } from '../../types';
@@ -49,6 +47,8 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
   ) => {
     if (newTimeRange !== null) {
       setTimeRange(newTimeRange);
+      // Request new historical data
+      socket?.emit('request_historical_data', { timeRange: newTimeRange });
     }
   };
 
@@ -69,7 +69,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       setExportLoading(true);
       handleExportClose();
 
-      const baseUrl = import.meta.env.VITE_SOCKET_SERVER;
+      const baseUrl = import.meta.env.VITE_SOCKET_SERVER || 'http://10.10.1.25:3000';
       let endpoint = '';
       
       switch (activeTab) {
@@ -87,28 +87,35 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       }
 
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}&format=${format}`, {
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}`, {
         method: 'GET',
         headers: {
-          'Accept': format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache'
+        }
       });
 
-      if (!response.ok) throw new Error('Export failed');
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`);
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
+      const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
       link.href = url;
-      link.download = `${endpoint}_data_${timeRange}_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.${format}`;
+      link.download = `${endpoint}_data_${timeRange}_${timestamp}.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export error:', error);
+      // You might want to show an error message to the user here
     } finally {
       setExportLoading(false);
     }
@@ -259,7 +266,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       
       <CardContent>
         {loading ? (
-          <Skeleton variant="rectangular\" height={300} width="100%" />
+          <Skeleton variant="rectangular" height={300} width="100%" />
         ) : (
           <Box sx={{ mt: 1 }}>
             {activeTab === 0 && (
