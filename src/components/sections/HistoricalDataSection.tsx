@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -54,7 +54,6 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
   ) => {
     if (newTimeRange !== null) {
       setTimeRange(newTimeRange);
-      // Request new historical data when time range changes
       socket?.emit('request_historical_data', { timeRange: newTimeRange });
     }
   };
@@ -98,10 +97,9 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}&format=${format}`, {
+      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}`, {
         method: 'GET',
         headers: {
-          'Accept': format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache'
         }
@@ -109,6 +107,8 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
 
       if (!response.ok) {
         if (response.status === 401) {
+          localStorage.removeItem('authToken');
+          window.location.reload();
           throw new Error('Session expired. Please log in again.');
         }
         throw new Error(`Export failed: ${response.statusText}`);
@@ -116,18 +116,19 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const a = document.createElement('a');
       const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
-      link.href = url;
-      link.download = `${endpoint}_data_${timeRange}_${timestamp}.${format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const fileName = `${endpoint}_data_${timeRange}_${timestamp}.csv`;
+      
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
     } catch (error) {
       console.error('Export error:', error);
-      // You might want to show an error message to the user here
       alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setExportLoading(false);
@@ -197,20 +198,15 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                 }
               }}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              MenuListProps={{
+                'aria-hidden': false
+              }}
             >
               <MenuItem onClick={() => exportData('csv')}>
                 <ListItemIcon>
                   <Table size={18} />
                 </ListItemIcon>
                 <ListItemText>Export as CSV</ListItemText>
-              </MenuItem>
-              <MenuItem onClick={() => exportData('excel')}>
-                <ListItemIcon>
-                  <LineChart size={18} />
-                </ListItemIcon>
-                <ListItemText>Export as Excel</ListItemText>
               </MenuItem>
             </Menu>
             <ToggleButtonGroup
@@ -279,7 +275,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       
       <CardContent>
         {loading ? (
-          <Skeleton variant="rectangular\" height={300} width="100%" />
+          <Skeleton variant="rectangular" height={300} width="100%" />
         ) : (
           <Box sx={{ mt: 1 }}>
             {activeTab === 0 && (
