@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -41,13 +41,20 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const { socket } = useSocket();
 
+  // Request initial historical data
+  useEffect(() => {
+    if (socket) {
+      socket.emit('request_historical_data', { timeRange });
+    }
+  }, [socket, timeRange]);
+
   const handleTimeRangeChange = (
     _: React.MouseEvent<HTMLElement>,
     newTimeRange: string | null,
   ) => {
     if (newTimeRange !== null) {
       setTimeRange(newTimeRange);
-      // Request new historical data
+      // Request new historical data when time range changes
       socket?.emit('request_historical_data', { timeRange: newTimeRange });
     }
   };
@@ -83,7 +90,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
           endpoint = 'electrical';
           break;
         default:
-          return;
+          throw new Error('Invalid tab selection');
       }
 
       const token = localStorage.getItem('authToken');
@@ -91,15 +98,19 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}`, {
+      const response = await fetch(`${baseUrl}/api/export/${endpoint}?timeRange=${timeRange}&format=${format}`, {
         method: 'GET',
         headers: {
+          'Accept': format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache'
         }
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Session expired. Please log in again.');
+        }
         throw new Error(`Export failed: ${response.statusText}`);
       }
 
@@ -113,9 +124,11 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+
     } catch (error) {
       console.error('Export error:', error);
       // You might want to show an error message to the user here
+      alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setExportLoading(false);
     }
@@ -266,7 +279,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       
       <CardContent>
         {loading ? (
-          <Skeleton variant="rectangular\" height={300} width="100%" />
+          <Skeleton variant="rectangular" height={300} width="100%" />
         ) : (
           <Box sx={{ mt: 1 }}>
             {activeTab === 0 && (
