@@ -207,7 +207,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
 
   const renderChart = () => {
     if (loading) {
-      return <Skeleton variant="rectangular" height={300} width="100%" />;
+      return <Skeleton variant="rectangular\" height={300} width="100%" />;
     }
 
     const chartProps = {
