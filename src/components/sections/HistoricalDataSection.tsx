@@ -20,7 +20,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
-import { BarChart3, Calendar, FileSpreadsheet, Download, Table, LineChart } from 'lucide-react';
+import { BarChart3, Calendar, FileSpreadsheet, Download, Table } from 'lucide-react';
 import { DataType } from '../../types';
 import TemperatureChart from '../charts/TemperatureChart';
 import HumidityChart from '../charts/HumidityChart';
@@ -41,7 +41,6 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const { socket } = useSocket();
 
-  // Request initial historical data
   useEffect(() => {
     if (socket) {
       socket.emit('request_historical_data', { timeRange });
@@ -70,7 +69,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
     setExportAnchorEl(null);
   };
 
-  const exportData = async (format: 'csv' | 'excel') => {
+  const exportData = async () => {
     try {
       setExportLoading(true);
       handleExportClose();
@@ -101,7 +100,8 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache',
+          'Accept': 'text/csv'
         }
       });
 
@@ -202,7 +202,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
                 'aria-hidden': false
               }}
             >
-              <MenuItem onClick={() => exportData('csv')}>
+              <MenuItem onClick={exportData}>
                 <ListItemIcon>
                   <Table size={18} />
                 </ListItemIcon>
@@ -275,7 +275,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       
       <CardContent>
         {loading ? (
-          <Skeleton variant="rectangular\" height={300} width="100%" />
+          <Skeleton variant="rectangular" height={300} width="100%" />
         ) : (
           <Box sx={{ mt: 1 }}>
             {activeTab === 0 && (
