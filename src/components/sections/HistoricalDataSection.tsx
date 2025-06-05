@@ -279,7 +279,7 @@ const HistoricalDataSection = ({ data, loading, isMobile }: HistoricalDataSectio
       
       <CardContent>
         {loading ? (
-          <Skeleton variant="rectangular" height={300} width="100%" />
+          <Skeleton variant="rectangular\" height={300} width="100%" />
         ) : (
           <Box sx={{ mt: 1 }}>
             {activeTab === 0 && (
